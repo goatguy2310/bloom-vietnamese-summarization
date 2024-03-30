@@ -6,6 +6,7 @@ import gradio as gr
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, AutoTokenizer
 from datasets import load_dataset
 
+# Loading the model
 device = "cuda:0"
 model_name = "bloom560m/checkpoint-200000"
 model = AutoModelForCausalLM.from_pretrained(
@@ -15,23 +16,27 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 model.to(device)
 model.config.use_cache = False
+
+# Loading the tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 
+# Preprocessing the input text
 def handle_input_text(text, max_len_input):
     text = text.split(" ")
     if len(text) > max_len_input:
         text = text[:max_len_input]
         for subtext in reversed(range(len(text))):
             if "." in text[subtext]:
-                text = text[:subtext+1]
+                text = text[:subtext + 1]
                 break
         text = " ".join(text)
     else:
         text = " ".join(text)
     return text
 
-def inferece(inputs):
+# Inference
+def inference(inputs):
     # inputs = handle_input_text(inputs, max_len_input = 1500)
     input_ids = tokenizer(inputs, return_tensors="pt")  
   
@@ -50,22 +55,19 @@ def inferece(inputs):
     response = response.split("###Tóm tắt:")[1]
     return response
 
-
-
+# Load the dataset
 dataset = load_dataset("Yuhthe/vietnews")
-
 test_dataset = dataset["test"]
-
 outputs = []
 
-
+# Evaluating with the test dataset
 cnt = 0
 for sample in tqdm(test_dataset):
-    cnt +=1 
+    cnt += 1 
     result_sample = {}
     try:
         try:
-            result = inferece(sample["article"])
+            result = inference(sample["article"])
         except:
             continue
         result = result.split("***END")[0]
@@ -75,7 +77,7 @@ for sample in tqdm(test_dataset):
         result_sample["article"] = sample["article"]
     except:
         try:
-            result = inferece(sample["article"])
+            result = inference(sample["article"])
         except:
             continue
         result_sample["guid"] = sample["guid"]
@@ -84,8 +86,10 @@ for sample in tqdm(test_dataset):
         result_sample["article"] = sample["article"]
     
     outputs.append(result_sample)
+    
     if len(result.split(" ")) < 8:
         continue
+
     if cnt % 2 == 0:
         with open("preds.json","w", encoding='utf-8') as jsonfile:
             json.dump(outputs, jsonfile, ensure_ascii=False, indent=4)

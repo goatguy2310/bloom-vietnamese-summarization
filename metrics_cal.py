@@ -1,3 +1,5 @@
+# This file is used to calculate the metrics of the outputs (from evalutation) of the model
+
 import os
 import json
 import numpy as np
@@ -5,8 +7,6 @@ import numpy as np
 # from tqdm import tqdm
 # from natsort import natsorted
 import evaluate
-
-
 
 rouge = evaluate.load('rouge')
 bleu = evaluate.load("bleu")

@@ -1,3 +1,5 @@
+# Running the model on gradio
+
 import torch
 # from bloom_560m.eval_dataset.utils import clean_text
 import gradio as gr
@@ -5,22 +7,20 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 device = "cuda:0"
 model_name = "bloom560m/checkpoint-200000"
 
+# Loading the model
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
     # quantization_config=bnb_config,
     trust_remote_code=True
 )
 model.to(device)
-
-
 model.config.use_cache = False
 
+# Loading the tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 
-
 def handle_input_text(text, max_len_input):
-
     text = text.split(" ")
     if len(text) > max_len_input:
         text = text[:max_len_input]
@@ -32,10 +32,7 @@ def handle_input_text(text, max_len_input):
     else:
         text = " ".join(text)
     print(len(text.split(" ")))
-    return text
-    
-
-        
+    return text     
 
 def evaluate(
     inputs=None,
@@ -70,8 +67,7 @@ def evaluate(
     response = response.split("###Tóm tắt:")[1]
     return response
 
-
-
+# Launch the gradio interface
 demo = gr.Interface(
     fn=evaluate,
     inputs=[

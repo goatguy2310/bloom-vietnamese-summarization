@@ -1,0 +1,9 @@
+datasets
+loralib
+sentencepiece
+transformers==4.33.0
+accelerate
+bitsandbytes
+peft
+gradio
+appdirs
