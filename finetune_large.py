@@ -1,3 +1,4 @@
+# Also to finetune the model
 import os
 
 import torch
@@ -215,5 +216,3 @@ if torch.__version__ >= "2":
 trainer.train() #if resume, choose True, else False
 
 model.save_pretrained("BLOOM-alpaca")
-
-print("\n If there's a warning about missing keys above, please disregard :)")

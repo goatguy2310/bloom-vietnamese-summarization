@@ -6,8 +6,6 @@ rmlist = ['ANTD.VN', 'Dân trí', 'VTC Now', 'VTC1','VTV24', 'VTV.vn', 'Vietnam+
 special_character = ["▶","🅙","🅑", "🅞", "✅","◉","()","|","[]","#"]
 rmre = '|'.join(rmlist)
 
-
-
 def clean_text(text, vocab=None):
     #clean HTML format
     cleanr = re.compile(r'<[^>]+>|<.*?>|&nbsp;|&amp;|&lt|p&gt|\u260e|<STYLE>(.*?)<\/STYLE>|<style>(.*?)<\/style>|\u2026')

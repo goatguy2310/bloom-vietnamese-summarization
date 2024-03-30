@@ -1,3 +1,5 @@
+# This file is used to calculate the metrics of the outputs (from evalutation) of the model
+
 import os
 import numpy as np
 from tqdm import tqdm

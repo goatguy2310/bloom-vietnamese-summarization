@@ -5,39 +5,30 @@ from datasets import load_metric
 from natsort import natsorted
 import evaluate
 
-
 rouge = evaluate.load('rouge')
-
-# predictions = ["hello there", "general kenobi"]
-# references = ["hello there", "general kenobi"]
-
-# results = rouge.compute(predictions=predictions,
-#                       references=references)
-
 
 import torch
 from bloom_560m.eval_dataset.utils import clean_text
 import gradio as gr
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, AutoTokenizer
+
+# Loading the model
 device = "cuda:0"
 model_name = "results/checkpoint-10000"
-
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
     # quantization_config=bnb_config,
     trust_remote_code=True
 )
 model.to(device)
-
-
 model.config.use_cache = False
 
+# Loading the tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 
-
+# Preprocessing the input text
 def handle_input_text(text, max_len_input):
-
     text = text.split(" ")
     if len(text) > max_len_input:
         text = text[:max_len_input]
@@ -50,11 +41,9 @@ def handle_input_text(text, max_len_input):
         text = " ".join(text)
     print(len(text.split(" ")))
     return text
-    
 
-        
-
-def infer(
+# Inference
+def inference(
     inputs=None,
     # temperature=0.1,
     # top_p=0.75,
@@ -67,10 +56,6 @@ def infer(
     #     f.write(inputs+"\n\n\n")
     # inputs = handle_input_text(inputs, max_len_input = 968)
     inputs = "Hãy tóm tắt câu sau: "+inputs
-
-
-    
-    
     input_ids = tokenizer(inputs, return_tensors="pt")  
   
     outputs = model.generate(  
@@ -89,12 +74,13 @@ def infer(
     response = response.split("###Tóm tắt:")[1]
     return response
 
-
+# Evaluating with the test dataset
 root_file = "evaluate"
 cnt_file = 0
 labels_pred = []
 labels_true = []
 
+# Looping through the test dataset and generating predictions
 for lf in tqdm(natsorted(os.listdir(root_file))):
     fp = os.path.join(root_file, lf)
     with open(fp, "r", encoding="utf-8") as fr:
@@ -102,7 +88,7 @@ for lf in tqdm(natsorted(os.listdir(root_file))):
     input, label = data.split("*****\n")
     
     try:
-        pred = infer(input)
+        pred = inference(input)
         labels_pred.append(pred)
         labels_true.append(label)
     except:
@@ -114,8 +100,6 @@ for lf in tqdm(natsorted(os.listdir(root_file))):
         fs.write(pred)
     fs.close()
     cnt_file+=1
-
-
 
 results = rouge.compute(predictions=labels_pred,
                       references=labels_true)
